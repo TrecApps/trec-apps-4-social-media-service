@@ -6,6 +6,8 @@ import java.util.List;
 
 @Data
 public class Education {
+    FeatureShow showEducation = FeatureShow.PUBLIC;
+    boolean allowAnalytics = true;
 
     String schoolId;
     String schoolName;

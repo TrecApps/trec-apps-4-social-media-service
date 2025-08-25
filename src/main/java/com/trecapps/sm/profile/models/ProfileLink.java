@@ -6,6 +6,7 @@ import lombok.Data;
 public class ProfileLink {
     String title;
     String link;
+    FeatureShow showLink = FeatureShow.PUBLIC;
 
     /// ToDo implement validation
 
