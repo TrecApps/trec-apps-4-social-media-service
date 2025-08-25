@@ -8,6 +8,6 @@ public class PostProfile {
     String aboutMe;
     String aboutMeShort;
     String pronouns;
-
+    PronounVisibility pronounVisibility;
 
 }

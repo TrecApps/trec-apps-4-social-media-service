@@ -3,6 +3,7 @@ package com.trecapps.sm.common.models;
 import jdk.jshell.Snippet;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @Data
 public class ResponseObj {
@@ -13,6 +14,10 @@ public class ResponseObj {
     String id;
 
     ReactionStats reactStats;
+
+    public ResponseEntity<ResponseObj> toEntity(){
+        return new ResponseEntity<>(this, HttpStatus.valueOf(status));
+    }
 
     public static ResponseObj getInstance(HttpStatus status, String message, String id) {
         ResponseObj ret = new ResponseObj();

@@ -2,6 +2,7 @@ package com.trecapps.sm.profile.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.trecapps.sm.profile.dto.Favorite;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -30,11 +31,11 @@ public class Profile {
     String pronouns;
 
     // For Coffeeshop
-    ObjectNode favorites;
+    List<Favorite> favorites;
 
     List<Education> education; // and Water Cooler
 
-    Set<String> brandLikes;
+    //Set<String> brandLikes;
 
     List<BrandDislike> brandDislikes;
 
