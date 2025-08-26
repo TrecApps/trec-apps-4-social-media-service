@@ -11,12 +11,13 @@ import org.springframework.web.reactive.config.EnableWebFlux;
         "com.trecapps.sm.common.*",                     // Scan this app
         "com.trecapps.auth.common.*",               // Authentication library
         "com.trecapps.auth.webflux.*",
-        "${trecapps.sm.mode}"
+        "com.trecapps.sm.profile.*",                // Enable Profile Features
+        "com.trecapps.sm.content"                   // Enable Content Features
 })
 @EnableMongoRepositories("com.trecapps.subscription.repos")
 @EnableWebFlux
-public class Driver {
+public class MonoDriver {
     public static void main(String[] args) {
-        SpringApplication.run(Driver.class, args);
+        SpringApplication.run(MonoDriver.class, args);
     }
 }

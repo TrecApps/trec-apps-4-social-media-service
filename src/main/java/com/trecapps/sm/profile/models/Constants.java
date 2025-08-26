@@ -13,4 +13,21 @@ public class Constants {
             "she/her",
             "they/them"
     );
+
+
+    public static final List<FeatureShow> RECRUITER_LIST = List.of(
+            FeatureShow.FOLLOWERS_AND_RECRUITERS,
+            FeatureShow.DIRECT_CONNECTIONS_AND_RECRUITERS,
+            FeatureShow.PRIVATE_AND_RECRUITERS
+    );
+
+    public static final List<FeatureShow> DIRECT_CONNECTION_LIST = List.of(
+            FeatureShow.DIRECT_CONNECTIONS,
+            FeatureShow.DIRECT_CONNECTIONS_AND_RECRUITERS
+    );
+
+    public static final List<FeatureShow> FOLLOWER_SHOW_LIST = List.of(
+            FeatureShow.FOLLOWERS,
+            FeatureShow.FOLLOWERS_AND_RECRUITERS
+    );
 }

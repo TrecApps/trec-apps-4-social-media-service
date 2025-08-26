@@ -1,5 +1,7 @@
 package com.trecapps.sm.common.functionality;
 
+import com.trecapps.auth.common.models.TcBrands;
+import com.trecapps.auth.common.models.TcUser;
 import org.springframework.http.HttpStatus;
 
 import java.util.UUID;
@@ -12,6 +14,17 @@ public class ProfileFunctionality {
     public static String getProfileId(String userId, String brandId){
         String id = brandId == null ? userId : brandId;
         String prefix = brandId == null ? USER_PREFIX : BRAND_PREFIX;
+
+        try{
+            return String.format("%s%s", prefix, UUID.fromString(id));
+        } catch(IllegalArgumentException e) {
+            throw new ObjectResponseException(HttpStatus.BAD_REQUEST, "Invalid User/Brand Id detected");
+        }
+    }
+
+    public static String getProfileId(TcUser user, TcBrands brand){
+        String id = brand == null ? user.getId() : brand.getId();
+        String prefix = brand == null ? USER_PREFIX : BRAND_PREFIX;
 
         try{
             return String.format("%s%s", prefix, UUID.fromString(id));
