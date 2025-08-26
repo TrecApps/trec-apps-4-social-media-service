@@ -1,10 +1,12 @@
 package com.trecapps.sm.common.functionality;
 
 import com.trecapps.sm.common.models.ResponseObj;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class ObjectResponseException extends RuntimeException {
+    @Getter
     HttpStatus status;
     String message;
 
