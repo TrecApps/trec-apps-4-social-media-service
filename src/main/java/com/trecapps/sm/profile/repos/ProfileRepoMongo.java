@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface ProfileRepoMongo extends ReactiveMongoRepository<Profile, String> {
 
-    @Query("")
+    @Query("{$or: ['title': query, 'aboutMeShort': query]}")
     Flux<Profile> findProfileByQuery(String query, List<String> blockers, Pageable page);
 }
