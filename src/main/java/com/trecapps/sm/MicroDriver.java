@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.attach.ApplicationInsights;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
@@ -21,4 +22,6 @@ public class MicroDriver {
         ApplicationInsights.attach();
         SpringApplication.run(MicroDriver.class, args);
     }
+
+    AbstractCassandraConfiguration
 }
