@@ -1,5 +1,6 @@
 package com.trecapps.sm;
 
+import com.microsoft.applicationinsights.attach.ApplicationInsights;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @EnableWebFlux
 public class MonoDriver {
     public static void main(String[] args) {
+        ApplicationInsights.attach();
         SpringApplication.run(MonoDriver.class, args);
     }
 }

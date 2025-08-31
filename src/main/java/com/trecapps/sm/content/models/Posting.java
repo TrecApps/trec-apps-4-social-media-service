@@ -6,15 +6,37 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Document("posting")
 @Slf4j
 public class Posting {
+
+    transient static final String VERSION_CHARS =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+            "abcdefghijklmnopqrstuvwxyz" +
+            "01234567890";
+
+    private String generateVersion(){
+        StringBuilder builder = new StringBuilder();
+        for(int c = 0; c < 4; c++){
+            builder.append(
+                    VERSION_CHARS.charAt(
+                            (int) Math.floor(Math.random() * VERSION_CHARS.length())
+                    )
+            );
+        }
+        return builder.toString();
+    }
+
+    private boolean versionUsed(String version) {
+        for(PostingContent contentVersions : contents){
+            if(version.equals(contentVersions.version))
+                return true;
+        }
+        return false;
+    }
 
     @MongoId
     String id;          // ID of the posting
@@ -36,6 +58,20 @@ public class Posting {
         parents.add(parentPosting.getId());
     }
 
+    void appendContent(String content) {
+        String version;
+        do{
+            version = this.generateVersion();
+        } while(this.versionUsed(version));
+
+        PostingContent newContent = new PostingContent();
+        newContent.setContent(content);
+        newContent.setMade(OffsetDateTime.now());
+        newContent.setVersion(version);
+
+        this.contents.add(newContent);
+    }
+
     String userId;          // User Id of who posted it
     String profilePoster;   // Profile ID of who posted it (identical to userId if no brand used)
 
@@ -45,6 +81,6 @@ public class Posting {
 
     OffsetDateTime made;
 
-    List<PostingContent> contents;
+    SortedSet<PostingContent> contents = new TreeSet<>();
 
 }
