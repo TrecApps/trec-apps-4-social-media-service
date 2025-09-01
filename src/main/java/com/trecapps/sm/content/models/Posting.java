@@ -58,7 +58,7 @@ public class Posting {
         parents.add(parentPosting.getId());
     }
 
-    void appendContent(String content) {
+    public void appendContent(String content) {
         String version;
         do{
             version = this.generateVersion();
