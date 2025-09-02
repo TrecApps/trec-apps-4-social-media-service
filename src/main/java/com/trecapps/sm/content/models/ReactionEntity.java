@@ -1,10 +1,12 @@
 package com.trecapps.sm.content.models;
 
+import lombok.Data;
 import org.springframework.data.cassandra.core.mapping.*;
 
 import java.time.OffsetDateTime;
 
 @Table("reactionEntry")
+@Data
 public class ReactionEntity {
 
     @PrimaryKey

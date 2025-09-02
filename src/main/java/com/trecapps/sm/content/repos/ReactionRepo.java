@@ -26,4 +26,7 @@ public interface ReactionRepo extends ReactiveCassandraRepository<ReactionEntity
     @Query(value = "select * from reactionEntry where user_id = :userId")
     Flux<ReactionEntity> findByUserId(String userId, Pageable page);
 
+    @Query(value = "select * from reactionEntry where content_id = :contentId and user_id = :userId")
+    Mono<ReactionEntity> findByContentAndUserId(String contentId, String userId);
+
 }
