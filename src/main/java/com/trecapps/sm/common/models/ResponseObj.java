@@ -1,5 +1,6 @@
 package com.trecapps.sm.common.models;
 
+import com.nimbusds.oauth2.sdk.Response;
 import jdk.jshell.Snippet;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,8 @@ public class ResponseObj {
     String message;
     String id;
 
+    transient Object data; // Used to hold the requested Data or report an issue
+
     ReactionStats reactStats;
 
     public ResponseEntity<ResponseObj> toEntity(){
@@ -24,6 +27,13 @@ public class ResponseObj {
         ret.id = id;
         ret.message = message;
         ret.status = status.value();
+        return ret;
+    }
+
+    public static ResponseObj getDataInstance(Object o){
+        ResponseObj ret = new ResponseObj();
+        ret.status = HttpStatus.OK.value();
+        ret.data = o;
         return ret;
     }
 

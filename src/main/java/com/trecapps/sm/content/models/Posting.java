@@ -81,6 +81,8 @@ public class Posting {
 
     OffsetDateTime made;
 
+    OffsetDateTime deleteSet;
+
     SortedSet<PostingContent> contents = new TreeSet<>();
 
 }

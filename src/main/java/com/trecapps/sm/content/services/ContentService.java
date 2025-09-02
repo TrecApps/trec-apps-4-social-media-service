@@ -15,11 +15,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -108,6 +113,11 @@ public class ContentService {
                 })
                 .flatMap((Posting post) -> {
                     post.appendContent(put.getContent());
+
+                    // ToDo - decide if editing content removes delete mar or if this request shoudl be blocked in an earlier step
+                    post.setDeleteSet(null);
+
+
                     return contentRepo.save(post);
                 })
                 .doOnNext((Posting post) -> {
@@ -116,9 +126,81 @@ public class ContentService {
                 .thenReturn(ResponseObj.getInstanceOK("Success"))
                 .onErrorResume(ObjectResponseException.class, (ObjectResponseException e) -> Mono.just(e.toResponseObj()))
                 .onErrorResume((Throwable thrown)-> {
-                    log.error("Error processing Content Posting", thrown);
+                    log.error("Error processing Content Update", thrown);
                     return Mono.just(ResponseObj.getInstance(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error!"));
                 });
+    }
+
+    public Mono<ResponseObj> deleteContent(TcUser user, TcBrands brand, String contentId){
+        return Mono.just(ProfileFunctionality.getProfileId(user, brand))
+        .flatMap((String profileId) -> {
+            return contentRepo.findById(contentId)
+                    .defaultIfEmpty(new Posting())
+                    .doOnNext((Posting post) -> {
+                        if(post.getId() == null)
+                            throw new ObjectResponseException(HttpStatus.NOT_FOUND, "Content not found");
+                        if(!post.getProfilePoster().equals(profileId) || !user.getId().equals(post.getUserId()))
+                            throw new ObjectResponseException(HttpStatus.FORBIDDEN, "This is not your Content!");
+                    });
+        })
+                .flatMap((Posting post) -> {
+                    if(post.getDeleteSet() != null)
+                        throw new ObjectResponseException(HttpStatus.CONFLICT, "Delete has already been scheduled for this post");
+                    post.setDeleteSet(OffsetDateTime.now());
+                    return contentRepo.save(post);
+                })
+
+                .thenReturn(ResponseObj.getInstanceOK("Success"))
+                .onErrorResume(ObjectResponseException.class, (ObjectResponseException e) -> Mono.just(e.toResponseObj()))
+                .onErrorResume((Throwable thrown)-> {
+                    log.error("Error processing Content Deletion", thrown);
+                    return Mono.just(ResponseObj.getInstance(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error!"));
+                });
+    }
+
+
+    public Mono<ResponseObj> getPosting(TcUser user, TcBrands brand, String contentId)
+    {
+        return Mono.just(ProfileFunctionality.getProfileId(user, brand))
+                .flatMap((String profileId) -> {
+                    return contentRepo.findById(contentId)
+                            .defaultIfEmpty(new Posting())
+                            .doOnNext((Posting post) -> {
+                                if(post.getId() == null)
+                                    throw new ObjectResponseException(HttpStatus.NOT_FOUND, "Content not found");
+                            });
+                })
+                .doOnNext((Posting post) -> {
+                    // ToDo - Need to make sure that whoever posted this is not blocking the requester
+
+                })
+                .map(ResponseObj::getDataInstance)
+                .onErrorResume(ObjectResponseException.class, (ObjectResponseException e) -> Mono.just(e.toResponseObj()))
+                .onErrorResume((Throwable thrown)-> {
+                    log.error("Error retrieving Content", thrown);
+                    return Mono.just(ResponseObj.getInstance(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error!"));
+                });
+    }
+
+    public Mono<List<String>> getPostingList(TcUser user, TcBrands brands, String profileId, String moduleId, int page, int size){
+        // ToDo - add mechanism so that any poster who is blocking this person does not have their content included in results
+
+        Flux<Posting> ret;
+        Pageable pageSize = PageRequest.of(page,size);
+
+        if(profileId == null){
+            ret =
+                    moduleId == null ?
+                            Flux.fromIterable(new ArrayList<Posting>()) :
+                            contentRepo.getContentByModuleId(moduleId,pageSize);
+
+        } else {
+            ret = moduleId == null ?
+                    contentRepo.getContentByProfileId(profileId, pageSize) :
+                    contentRepo.getContentByModuleAndProfileId(moduleId, profileId,pageSize);
+        }
+
+        return ret.map(Posting::getId).collectList();
     }
 
 

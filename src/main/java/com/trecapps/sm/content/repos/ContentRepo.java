@@ -15,5 +15,6 @@ public interface ContentRepo extends ReactiveMongoRepository<Posting, String> {
     @Query("{'moduleId': moduleId}")
     Flux<Posting> getContentByModuleId(String moduleId, Pageable page);
 
-
+    @Query("{'moduleId': moduleId, $or: ['profilePoster': profileId, 'profileOwner': profileId]}")
+    Flux<Posting> getContentByModuleAndProfileId(String moduleId, String profileID, Pageable page);
 }
