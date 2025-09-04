@@ -22,6 +22,4 @@ public class MicroDriver {
         ApplicationInsights.attach();
         SpringApplication.run(MicroDriver.class, args);
     }
-
-    AbstractCassandraConfiguration
 }
