@@ -9,7 +9,7 @@ import com.trecapps.sm.content.dto.ContentPost;
 import com.trecapps.sm.content.dto.ContentPut;
 import com.trecapps.sm.content.models.Posting;
 import com.trecapps.sm.content.repos.ContentRepo;
-import com.trecapps.sm.content.repos.ProfileRepoMongo;
+import com.trecapps.sm.profile.repos.ProfileRepoMongo;
 import com.trecapps.sm.profile.models.Profile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -73,8 +73,8 @@ dependencies {
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:+'
 
-    implementation "org.springframework.boot:spring-boot-starter-data-mongodb:$springbootVersion"   // Profiles and posts
-    implementation "org.springframework.boot:spring-boot-starter-data-cassandra:$springbootVersion" // Connections and Reactions
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb-reactive:$springbootVersion"   // Profiles and posts
+    implementation "org.springframework.boot:spring-boot-starter-data-cassandra-reactive:$springbootVersion" // Connections and Reactions
     implementation 'com.fasterxml.uuid:java-uuid-generator:5.1.0' // Used for Time based UUIDs
 
 
