@@ -12,6 +12,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @SpringBootApplication
 @ComponentScan({
         "com.trecapps.sm.common.*",                     // Scan this app
+        "com.trecapps.sm.common",                     // Scan this app
         "com.trecapps.auth.common.*",               // Authentication library
         "com.trecapps.auth.webflux.*",
         "${trecapps.sm.mode}"

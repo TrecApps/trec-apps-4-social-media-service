@@ -1,4 +1,4 @@
-package com.trecapps.sm.profile.service;
+package com.trecapps.sm.common;
 
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import lombok.SneakyThrows;
