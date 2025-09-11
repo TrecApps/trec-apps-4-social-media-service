@@ -17,6 +17,4 @@ public interface ConnectionRepo extends ReactiveCassandraRepository<ConnectionEn
 
     @Query("select * from connectionEntry where followee = :followee")
     Flux<ConnectionEntry> findByFollowee(String followee, Pageable page);
-
-
 }

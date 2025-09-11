@@ -2,16 +2,19 @@ package com.trecapps.sm.profile.controllers;
 
 import com.azure.core.annotation.Get;
 import com.trecapps.auth.common.models.TrecAuthentication;
+import com.trecapps.sm.common.functionality.ProfileFunctionality;
 import com.trecapps.sm.common.models.ResponseObj;
 import com.trecapps.sm.profile.models.ConnectionEntry;
 import com.trecapps.sm.profile.service.ConnectionsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/Connections")
@@ -31,6 +34,20 @@ public class ConnectionController {
                 trecAuthentication.getBrand(),
                 profileId
         ).map(ResponseObj::toEntity);
+    }
+
+    @GetMapping("/with/{id}")
+    Mono<ResponseEntity<ConnectionEntry>> with(
+            Authentication authentication,
+            @PathVariable String id
+    ) {
+        TrecAuthentication trecAuthentication = (TrecAuthentication) authentication;
+        return connectionsService.getTwoWayConnection(
+                ProfileFunctionality.getProfileId(trecAuthentication.getUser(), trecAuthentication.getBrand()),
+                id
+        ).map((Optional<ConnectionEntry> oEntry) -> {
+            return oEntry.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        });
     }
 
     @GetMapping("/approve")

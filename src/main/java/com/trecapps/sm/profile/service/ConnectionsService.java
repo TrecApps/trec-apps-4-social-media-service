@@ -39,7 +39,7 @@ public class ConnectionsService {
         return link;
     }
 
-    Mono<Optional<ConnectionEntry>> getTwoWayConnection(String profile1, String profile2) {
+    public Mono<Optional<ConnectionEntry>> getTwoWayConnection(String profile1, String profile2) {
         ConnectionLink link1 = getLink(profile1, profile2);
         ConnectionLink link2 = getLink(profile2, profile1);
 
