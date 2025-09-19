@@ -6,10 +6,7 @@ import com.trecapps.auth.common.models.TrecAuthentication;
 import com.trecapps.auth.webflux.services.IUserStorageServiceAsync;
 import com.trecapps.sm.common.functionality.ObjectResponseException;
 import com.trecapps.sm.common.models.ResponseObj;
-import com.trecapps.sm.profile.dto.Favorite;
-import com.trecapps.sm.profile.dto.PostProfile;
-import com.trecapps.sm.profile.dto.ProfileSearchResult;
-import com.trecapps.sm.profile.dto.SkillPost;
+import com.trecapps.sm.profile.dto.*;
 import com.trecapps.sm.profile.models.Constants;
 import com.trecapps.sm.profile.models.Education;
 import com.trecapps.sm.profile.models.Profile;
@@ -95,6 +92,22 @@ public class ProfileController {
                     TcBrands brands = trecAuthentication.getBrand();
                     return profileService.getProfile(user, brands == null ? null : brands.getId(), id);
                 })
+                .map(ResponseEntity::ok)
+                .onErrorResume(ObjectResponseException.class, (ObjectResponseException o) -> Mono.just(new ResponseEntity<>(o.getStatus())));
+    }
+
+    @GetMapping("/basic/{id}")
+    Mono<ResponseEntity<BasicProfile>> getBasicProfile(
+            Authentication authentication,
+            @PathVariable String id
+    ){
+        return Mono.just((TrecAuthentication) authentication)
+                .flatMap((TrecAuthentication trecAuthentication) -> {
+                    TcUser user = trecAuthentication.getUser();
+                    TcBrands brands = trecAuthentication.getBrand();
+                    return profileService.getProfile(user, brands == null ? null : brands.getId(), id);
+                })
+                .map(BasicProfile::getInstance)
                 .map(ResponseEntity::ok)
                 .onErrorResume(ObjectResponseException.class, (ObjectResponseException o) -> Mono.just(new ResponseEntity<>(o.getStatus())));
     }

@@ -91,7 +91,11 @@ public class ContentService {
                 .doOnNext((Posting newPost) -> {
                     // ToDo - add Broadcast mechanism
                 })
-                .map((Posting newPost) -> ResponseObj.getInstanceOK("Posted!", newPost.getId()))
+                .map((Posting newPost) -> {
+                    ResponseObj ret = ResponseObj.getInstanceOK("Posted!", newPost.getId());
+                    ret.setData(newPost);
+                    return ret;
+                })
                 .onErrorResume(ObjectResponseException.class, (ObjectResponseException e) -> Mono.just(e.toResponseObj()))
                 .onErrorResume((Throwable thrown)-> {
                     log.error("Error processing Content Posting", thrown);
