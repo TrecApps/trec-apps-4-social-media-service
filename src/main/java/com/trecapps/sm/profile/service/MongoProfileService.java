@@ -49,6 +49,8 @@ public class MongoProfileService implements ProfileService {
                     profile.setPronouns(post.getPronouns());
                     profile.setPronounVisibility(post.getPronounVisibility());
 
+                    profile.setTitle(brand == null ? user.getDisplayName() : brand.getName());
+
                     return profileRepo.save(profile);
                 })
                 .map((Profile profile) -> ResponseObj.getInstanceCREATED("Success", profile.getId()));

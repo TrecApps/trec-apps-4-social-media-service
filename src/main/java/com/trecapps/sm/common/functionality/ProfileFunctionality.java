@@ -15,6 +15,16 @@ public class ProfileFunctionality {
         String id = brandId == null ? userId : brandId;
         String prefix = brandId == null ? USER_PREFIX : BRAND_PREFIX;
 
+        if(id.length() == 32){
+            // Possibly a UUID without '-'
+            id =
+                    id.substring(0, 8) + "-" +
+                            id.substring(8, 12) + "-" +
+                            id.substring(12, 16) + "-" +
+                            id.substring(16, 20) + "-" +
+                            id.substring(20);
+        }
+
         try{
             return String.format("%s%s", prefix, UUID.fromString(id));
         } catch(IllegalArgumentException e) {
@@ -26,7 +36,19 @@ public class ProfileFunctionality {
         String id = brand == null ? user.getId() : brand.getId();
         String prefix = brand == null ? USER_PREFIX : BRAND_PREFIX;
 
+        if(id.length() == 32){
+            // Possibly a UUID without '-'
+            id =
+                    id.substring(0, 8) + "-" +
+                    id.substring(8, 12) + "-" +
+                    id.substring(12, 16) + "-" +
+                    id.substring(16, 20) + "-" +
+                    id.substring(20);
+        }
+
         try{
+
+
             return String.format("%s%s", prefix, UUID.fromString(id));
         } catch(IllegalArgumentException e) {
             throw new ObjectResponseException(HttpStatus.BAD_REQUEST, "Invalid User/Brand Id detected");

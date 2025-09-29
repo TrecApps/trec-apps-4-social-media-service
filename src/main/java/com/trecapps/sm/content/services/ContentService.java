@@ -127,7 +127,11 @@ public class ContentService {
                 .doOnNext((Posting post) -> {
                     // ToDo - render stale every reaction that reacted to the previous version of this post
                 })
-                .thenReturn(ResponseObj.getInstanceOK("Success"))
+                .map((Posting p) -> {
+                    ResponseObj obj = ResponseObj.getInstanceOK("Success");
+                    obj.setData(p);
+                    return obj;
+                })
                 .onErrorResume(ObjectResponseException.class, (ObjectResponseException e) -> Mono.just(e.toResponseObj()))
                 .onErrorResume((Throwable thrown)-> {
                     log.error("Error processing Content Update", thrown);

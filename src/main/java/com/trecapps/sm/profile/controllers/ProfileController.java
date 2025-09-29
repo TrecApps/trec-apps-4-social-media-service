@@ -12,9 +12,11 @@ import com.trecapps.sm.profile.models.Education;
 import com.trecapps.sm.profile.models.Profile;
 import com.trecapps.sm.profile.models.WorkExpHolder;
 import com.trecapps.sm.profile.service.ProfileService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -22,8 +24,11 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Optional;
 
+import static com.mysql.cj.conf.PropertyKey.logger;
+
 @RestController
 @RequestMapping("/Profile")
+@Slf4j
 public class ProfileController {
 
     @Autowired
@@ -36,7 +41,7 @@ public class ProfileController {
     @PostMapping
     Mono<ResponseEntity<ResponseObj>> createProfile(
             Authentication authentication,
-            @RequestParam(value = "brandId", defaultValue = "") String brandId,
+            @RequestParam(value = "brandId",defaultValue = "") String brandId,
             @RequestBody PostProfile postProfile
             ){
         return Mono.just((TrecAuthentication)authentication)
@@ -90,7 +95,20 @@ public class ProfileController {
                 .flatMap((TrecAuthentication trecAuthentication) -> {
                     TcUser user = trecAuthentication.getUser();
                     TcBrands brands = trecAuthentication.getBrand();
-                    return profileService.getProfile(user, brands == null ? null : brands.getId(), id);
+
+                    String[] idComponents = id.split("-", 2);
+                    if(idComponents.length != 2)
+                        throw new ObjectResponseException(HttpStatus.BAD_REQUEST, "invalid id format");
+                    if(idComponents[1].length() == 32){
+                        idComponents[1] =
+                                idComponents[1].substring(0, 8) + "-" +
+                                        idComponents[1].substring(8, 12) + "-" +
+                                        idComponents[1].substring(12, 16) + "-" +
+                                        idComponents[1].substring(16, 20) + "-" +
+                                        idComponents[1].substring(20);
+                    }
+
+                    return profileService.getProfile(user, brands == null ? null : brands.getId(), String.join("-", idComponents));
                 })
                 .map(ResponseEntity::ok)
                 .onErrorResume(ObjectResponseException.class, (ObjectResponseException o) -> Mono.just(new ResponseEntity<>(o.getStatus())));
