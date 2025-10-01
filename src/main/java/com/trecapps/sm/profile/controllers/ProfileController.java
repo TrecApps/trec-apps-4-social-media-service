@@ -37,6 +37,11 @@ public class ProfileController {
     @Autowired
     IUserStorageServiceAsync userStorageService;
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void handle(HttpMessageNotReadableException e) {
+        log.warn("Returning HTTP 400 Bad Request", e);
+    }
 
     @PostMapping
     Mono<ResponseEntity<ResponseObj>> createProfile(

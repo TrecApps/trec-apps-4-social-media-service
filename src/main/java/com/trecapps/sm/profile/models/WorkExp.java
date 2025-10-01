@@ -2,7 +2,7 @@ package com.trecapps.sm.profile.models;
 
 import lombok.Data;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @Data

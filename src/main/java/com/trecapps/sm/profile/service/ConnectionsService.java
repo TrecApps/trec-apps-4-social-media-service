@@ -53,7 +53,7 @@ public class ConnectionsService {
         return mono1.zipWith(mono2)
                 .map((Tuple2<Optional<ConnectionEntry>, Optional<ConnectionEntry>> tup) -> {
                     Optional<ConnectionEntry> ent1 = tup.getT1();
-                    Optional<ConnectionEntry> ent2 = tup.getT1();
+                    Optional<ConnectionEntry> ent2 = tup.getT2();
 
                     return ent1.isPresent() ? ent1 : ent2;
                 } );
