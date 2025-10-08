@@ -135,17 +135,22 @@ public class NotificationCassandraConfig extends AbstractCassandraConfiguration 
         return sc;
     }
 
-    @Bean
-    @Override
-    public CassandraConverter cassandraConverter() {
 
-        MappingCassandraConverter converter =  new MappingCassandraConverter(new CassandraMappingContext());
-        converter
-                .setCustomConversions(
-                        new CassandraCustomConversions(Arrays.asList(new InstantToOffsetDateTimeConverter()))
-                );
-        return converter;
-    }
+
+//    @Bean
+//    @Override
+//    public CassandraConverter cassandraConverter() {
+//
+//        MappingCassandraConverter converter =  new MappingCassandraConverter(new CassandraMappingContext());
+//        converter
+//                .setCustomConversions(
+//                        new CassandraCustomConversions(Arrays.asList(
+//                                new InstantToOffsetDateTimeConverter(),
+//                                new OffsetDateTimeToInstantConverter()
+//                                ))
+//                );
+//        return converter;
+//    }
 
 
     @Bean

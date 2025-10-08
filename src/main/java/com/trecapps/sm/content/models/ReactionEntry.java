@@ -6,9 +6,9 @@ import org.springframework.data.cassandra.core.mapping.*;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
-@Table("reactionEntry")
+@Table("reaction_entry")
 @Data
-public class ReactionEntity {
+public class ReactionEntry {
 
     @PrimaryKey
     ReactionId reactionId;
@@ -18,7 +18,7 @@ public class ReactionEntity {
 
     String version;     // the version of the content being reacted to
     @CassandraType(type = CassandraType.Name.TIMESTAMP)
-    OffsetDateTime made;// When the Reaction was made
+    Instant made;// When the Reaction was made
     @Column("is_stale")
     boolean isStale;    // Whether the content has been updated since the reaction was made
     @Column("is_private")
@@ -26,10 +26,10 @@ public class ReactionEntity {
 
 
     public void setMade(Instant instant) {
-        made = instant.atOffset(OffsetDateTime.now().getOffset());
+        this.made = instant;
     }
 
     public void setMade(OffsetDateTime made){
-        this.made = made;
+        this.made = made.toInstant();
     }
 }

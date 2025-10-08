@@ -16,7 +16,8 @@ import org.springframework.web.reactive.config.EnableWebFlux;
         "com.trecapps.auth.common.*",               // Authentication library
         "com.trecapps.auth.webflux.*",
         "com.trecapps.sm.profile.*",                // Enable Profile Features
-        "com.trecapps.sm.content"                   // Enable Content Features
+        "com.trecapps.sm.content",                   // Enable Content Features
+        "com.trecapps.sm.content.*"
 })
 @EnableReactiveMongoRepositories
 @EnableWebFlux

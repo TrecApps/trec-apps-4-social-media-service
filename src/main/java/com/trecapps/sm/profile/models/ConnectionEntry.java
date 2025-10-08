@@ -9,30 +9,30 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
-@Table("connectionEntry")
+@Table("connection_entry")
 @Data
 public class ConnectionEntry {
     @PrimaryKey
     ConnectionLink id;
     @CassandraType(type = CassandraType.Name.TIMESTAMP)
-    OffsetDateTime made;
+    Instant made;
     @CassandraType(type = CassandraType.Name.TIMESTAMP)
-    OffsetDateTime accepted;
+    Instant accepted;
     @Column("one_way") boolean oneWay;             // Set true when a Brand Profile is involved, false if both parties are User Profiles
 
     public void setMade(Instant instant) {
-        made = instant.atOffset(OffsetDateTime.now().getOffset());
+        made = instant;
     }
 
     public void setMade(OffsetDateTime made){
-        this.made = made;
+        this.made = made.toInstant();
     }
 
     public void setAccepted(Instant instant) {
-        accepted = instant.atOffset(OffsetDateTime.now().getOffset());
+        accepted = instant;
     }
 
     public void setAccepted(OffsetDateTime accepted){
-        this.accepted = accepted;
+        this.accepted = accepted.toInstant();
     }
 }

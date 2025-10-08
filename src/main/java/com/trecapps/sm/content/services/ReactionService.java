@@ -21,6 +21,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,17 +60,17 @@ public class ReactionService {
                 .flatMap((Posting posting) -> {
 
                     return reactionRepo.findByContentAndUserId(contentId, user.getId())
-                            .doOnNext((ReactionEntity entity) -> {
+                            .doOnNext((ReactionEntry entity) -> {
                                 reactionRepo.delete(entity);
-                            }).thenReturn(new ReactionEntity())
-                            .doOnNext((ReactionEntity entity) -> {
+                            }).thenReturn(new ReactionEntry())
+                            .doOnNext((ReactionEntry entity) -> {
                                 entity.setVersion(posting.getContents().last().getVersion());
                                 entity.setStale(false);
                             });
 
 
                 })
-                .flatMap((ReactionEntity entity) -> {
+                .flatMap((ReactionEntry entity) -> {
                     ReactionId reactionId = new ReactionId();
                     reactionId.setContentId(contentId);
                     reactionId.setUserId(user.getId());
@@ -82,7 +83,7 @@ public class ReactionService {
 
                     return reactionRepo.save(entity);
                 })
-                .flatMap((ReactionEntity entity) -> {
+                .flatMap((ReactionEntry entity) -> {
                     return getReactionCount(user, contentId);
                 });
     }
@@ -90,7 +91,7 @@ public class ReactionService {
 
     public Mono<ResponseObj> getReactionCount(TcUser user, String contentId) {
         return reactionRepo.findCountByContentId(contentId)
-                .collectList()
+//                .collectList()
                 .map((List<ReactionTypeCount> reactionList) -> {
                     // Use a List type that handles deletions easily
                     reactionList = new LinkedList<>(reactionList);
@@ -107,7 +108,7 @@ public class ReactionService {
                 })
                 .flatMap((ReactionStats stats) -> {
                     return reactionRepo.findByContentAndUserId(contentId, user.getId())
-                            .map((ReactionEntity entity) -> {
+                            .map((ReactionEntry entity) -> {
                                stats.setYourReaction(entity.getReactionId().getType());
                                return stats;
                             });
@@ -122,11 +123,11 @@ public class ReactionService {
 
     public Mono<ResponseObj> removeReaction(TcUser user, String contentId) {
         return reactionRepo.findByContentAndUserId(contentId, user.getId())
-                .doOnNext((ReactionEntity entity) -> {
+                .doOnNext((ReactionEntry entity) -> {
                     reactionRepo.delete(entity);
                 })
-                .defaultIfEmpty(new ReactionEntity())
-                .flatMap((ReactionEntity entity) -> {
+                .defaultIfEmpty(new ReactionEntry())
+                .flatMap((ReactionEntry entity) -> {
                     return this.getReactionCount(user, contentId)
                             .doOnNext((ResponseObj obj) -> {
                                 if(entity.getReactionId() == null) {
@@ -154,16 +155,16 @@ public class ReactionService {
                     }
                     Pageable pageable = PageRequest.of(page, size);
 
-                    Flux<ReactionEntity> reactions = type == null ?
+                    Flux<ReactionEntry> reactions = type == null ?
                             reactionRepo.findByContentId(contentId, pageable) :
                             reactionRepo.findByContentIdAndType(contentId, type, pageable);
                     return reactions.collectList();
                 })
-                .map((List<ReactionEntity> entities) -> {
+                .map((List<ReactionEntry> entities) -> {
                     return entities.stream()
-                            .map((ReactionEntity entity) -> {
+                            .map((ReactionEntry entity) -> {
                                 ContentReactionEntry reactionEntry = new ContentReactionEntry();
-                                reactionEntry.setMade(entity.getMade());
+                                reactionEntry.setMade(entity.getMade().atOffset(ZoneOffset.UTC));
                                 reactionEntry.setType(entity.getReactionId().getType());
 
 
@@ -181,7 +182,7 @@ public class ReactionService {
     public Mono<List<ProfileReactionEntry>> getSelfReactions(TcUser user, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return reactionRepo.findByUserId(user.getId(), pageable)
-                .map((ReactionEntity entity) -> {
+                .map((ReactionEntry entity) -> {
 
                     ProfileReactionEntry ret = new ProfileReactionEntry();
 
@@ -189,7 +190,7 @@ public class ReactionService {
                     ret.setPrivate(entity.isPrivate());
                     ret.setContentId(entity.getReactionId().getContentId());
                     ret.setBrandId(entity.getBrandId());
-                    ret.setMade(entity.getMade());
+                    ret.setMade(entity.getMade().atOffset(ZoneOffset.UTC));
                     ret.setStale(entity.isStale());
                     ret.setVersion(entity.getVersion());
                     return ret;
