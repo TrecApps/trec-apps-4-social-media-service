@@ -98,4 +98,20 @@ public class ContentController {
                 page,
                 size );
     }
+
+    @GetMapping("/byParent/{parentId}")
+    Mono<List<Posting>> getPostingsByParent(
+            Authentication authentication,
+            @PathVariable String parentId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        TrecAuthentication trecAuthentication = (TrecAuthentication) authentication;
+        return contentService.getReplyList(
+                trecAuthentication.getUser(),
+                trecAuthentication.getBrand(),
+                parentId,
+                page,
+                size );
+    }
 }

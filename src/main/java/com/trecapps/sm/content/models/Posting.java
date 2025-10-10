@@ -1,5 +1,6 @@
 package com.trecapps.sm.content.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -42,6 +43,7 @@ public class Posting {
     String id;          // ID of the posting
 
     List<String> parents = new ArrayList<>(); // Parents (Posting is a comment if non-empty)
+    String parent;
 
     public boolean isPost() {
         return parents.isEmpty();
@@ -78,9 +80,9 @@ public class Posting {
     String profileOwner;    // Populated only if poster directs it to another profile
 
     String moduleId;        // If part of a group, which group this belongs to
-
+    @JsonFormat(pattern="dd/MM/yyyy HH:mm:ss Z")
     OffsetDateTime made;
-
+    @JsonFormat(pattern="dd/MM/yyyy HH:mm:ss Z")
     OffsetDateTime deleteSet;
 
     SortedSet<PostingContent> contents = new TreeSet<>();

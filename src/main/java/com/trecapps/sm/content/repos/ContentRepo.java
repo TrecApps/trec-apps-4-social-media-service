@@ -4,17 +4,24 @@ import com.trecapps.sm.content.models.Posting;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
 public interface ContentRepo extends ReactiveMongoRepository<Posting, String> {
-    @Query("{$or: ['profilePoster': profileId, 'profileOwner': profileId]}")
-    Flux<Posting> getContentByProfileId(String profileId, Pageable page);
+    @Query("{'profileOwner': ?0, 'parent' :{ $exists: false }}"
+            //, 'parent': {$or: [ $exists: false, null]}  }"
+        )
+    Flux<Posting> getContentByProfileId(@Param("profileId") String profileId, Pageable page);
 
-    @Query("{'moduleId': moduleId}")
-    Flux<Posting> getContentByModuleId(String moduleId, Pageable page);
+    @Query("{'moduleId': ?0}")
+    Flux<Posting> getContentByModuleId(@Param("moduleId") String moduleId, Pageable page);
 
-    @Query("{'moduleId': moduleId, $or: ['profilePoster': profileId, 'profileOwner': profileId]}")
-    Flux<Posting> getContentByModuleAndProfileId(String moduleId, String profileID, Pageable page);
+    @Query("{'parent': ?0}")
+//    @Query("{{$arrayElemAt:['parents', -1]}, parentId}")
+    Flux<Posting> getContentByParent(@Param("parentId") String parentId, Pageable page);
+
+    @Query("{'moduleId': ?0, $or: ['profilePoster': ?1, 'profileOwner': ?1], 'parent': null}")
+    Flux<Posting> getContentByModuleAndProfileId(@Param("moduleId") String moduleId, @Param("profileId") String profileID, Pageable page);
 }

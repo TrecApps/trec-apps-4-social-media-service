@@ -70,6 +70,7 @@ public class ContentService {
                                 if(parentPosting.getId() == null)
                                     throw new ObjectResponseException(HttpStatus.NOT_FOUND, "Parent content not found");
                                 newPost.setParents(parentPosting);
+                                newPost.setParent(parent);
                                 return newPost;
                             });
                 })
@@ -209,6 +210,16 @@ public class ContentService {
         }
 
         return ret.map(Posting::getId).collectList();
+    }
+
+    public Mono<List<Posting>> getReplyList(TcUser user, TcBrands brands, String parentId, int page, int size){
+        // ToDo - add mechanism so that any poster who is blocking this person does not have their content included in results
+
+        Pageable pageSize = PageRequest.of(page,size);
+
+
+
+        return this.contentRepo.getContentByParent(parentId, pageSize).collectList();
     }
 
 

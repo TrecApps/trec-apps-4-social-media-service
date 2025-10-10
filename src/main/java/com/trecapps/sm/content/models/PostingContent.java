@@ -1,5 +1,6 @@
 package com.trecapps.sm.content.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
@@ -8,6 +9,7 @@ import java.time.OffsetDateTime;
 public class PostingContent implements Comparable<PostingContent> {
 
     String content;
+    @JsonFormat(pattern="dd/MM/yyyy HH:mm:ss Z")
     OffsetDateTime made;
     String version;
 
