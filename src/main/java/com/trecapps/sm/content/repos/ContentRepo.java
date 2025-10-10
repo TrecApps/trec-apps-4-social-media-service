@@ -10,16 +10,13 @@ import reactor.core.publisher.Flux;
 import java.util.UUID;
 
 public interface ContentRepo extends ReactiveMongoRepository<Posting, String> {
-    @Query("{'profileOwner': ?0, 'parent' :{ $exists: false }}"
-            //, 'parent': {$or: [ $exists: false, null]}  }"
-        )
+    @Query("{\"$or\": [{'profileOwner': ?0}, {'profilePoster': ?0}], 'parent' :{ $exists: false }}")
     Flux<Posting> getContentByProfileId(@Param("profileId") String profileId, Pageable page);
 
     @Query("{'moduleId': ?0}")
     Flux<Posting> getContentByModuleId(@Param("moduleId") String moduleId, Pageable page);
 
     @Query("{'parent': ?0}")
-//    @Query("{{$arrayElemAt:['parents', -1]}, parentId}")
     Flux<Posting> getContentByParent(@Param("parentId") String parentId, Pageable page);
 
     @Query("{'moduleId': ?0, $or: ['profilePoster': ?1, 'profileOwner': ?1], 'parent': null}")
