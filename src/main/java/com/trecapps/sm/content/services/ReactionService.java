@@ -6,10 +6,13 @@ import com.trecapps.sm.common.functionality.ObjectResponseException;
 import com.trecapps.sm.common.functionality.ProfileFunctionality;
 import com.trecapps.sm.common.models.ReactionStats;
 import com.trecapps.sm.common.models.ResponseObj;
+import com.trecapps.sm.common.models.SocialMediaEvent;
+import com.trecapps.sm.common.models.SocialMediaEventType;
 import com.trecapps.sm.content.dto.ContentReactionEntry;
 import com.trecapps.sm.content.dto.ProfileReactionEntry;
 import com.trecapps.sm.content.dto.ReactionPosting;
 import com.trecapps.sm.content.models.*;
+import com.trecapps.sm.content.pipeline.IEventInitiator;
 import com.trecapps.sm.content.repos.ReactionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +28,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class ReactionService {
@@ -34,6 +38,9 @@ public class ReactionService {
 
     @Autowired
     ContentService contentService;
+
+    @Autowired(required = false)
+    IEventInitiator eventInitiator;
 
     @Value("#{'${trecapps.sm.reaction-types}'.split(',')}")
     List<String> reactionTypes;
@@ -59,13 +66,19 @@ public class ReactionService {
                 })
                 .flatMap((Posting posting) -> {
 
+                    AtomicBoolean isNew = new AtomicBoolean(false);
+
                     return reactionRepo.findByContentAndUserId(contentId, user.getId())
                             .doOnNext((ReactionEntry entity) -> {
                                 reactionRepo.delete(entity);
+                                isNew.set(true);
                             }).thenReturn(new ReactionEntry())
                             .doOnNext((ReactionEntry entity) -> {
                                 entity.setVersion(posting.getContents().last().getVersion());
                                 entity.setStale(false);
+                                entity.setNew(isNew.get());
+                                entity.setContentParent(posting.getParent());
+                                entity.setModuleId(posting.getModuleId());
                             });
 
 
@@ -82,6 +95,26 @@ public class ReactionService {
                     entity.setBrandId(brands == null ? null : brands.getId());
 
                     return reactionRepo.save(entity);
+                })
+                .doOnNext((ReactionEntry entity) -> {
+                    if(eventInitiator == null || !entity.isNew()) {
+                        // we only care about new reactions (and if the event initiator is available)
+                        return;
+                    }
+                    SocialMediaEvent event = new SocialMediaEvent();
+//                    event.setUserId(entity.getUserId());
+                    event.setResourceId(entity.getReactionId().getContentId());
+                    event.setModule(entity.getModuleId());
+                    String parent = entity.getContentParent();
+                    if(parent == null){
+                        event.setType(SocialMediaEventType.POST_REACTION);
+                    } else {
+                        event.setType(SocialMediaEventType.COMMENT_REACTION);
+                        event.setPostId(parent);
+                    }
+
+                    eventInitiator.sendEvent(event).subscribe();
+
                 })
                 .flatMap((ReactionEntry entity) -> {
                     return getReactionCount(user, contentId);

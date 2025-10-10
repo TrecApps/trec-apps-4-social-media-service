@@ -10,6 +10,10 @@ import java.time.OffsetDateTime;
 @Data
 public class ReactionEntry {
 
+    transient boolean isNew = false;
+    transient String contentParent = null;
+    transient String moduleId = null;
+
     @PrimaryKey
     ReactionId reactionId;
 
