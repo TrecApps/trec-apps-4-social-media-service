@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ProfileRepoMongo extends ReactiveMongoRepository<Profile, String> {
 
-    @Query("{$or: ['title': ?0, 'aboutMeShort': ?0]}")
+    //@Query("{\"$or\": [{\"title\": {\"$regex\": /^?0$/, $options: 'i'}, {\"aboutMeShort\": {\"$regex\": /^?0$/, $options: 'i'}}]}")
+    @Query(value = "{\"$or\": [{ 'title' : { '$regex' : '?0', '$options' : 'i'}}, { 'aboutMeShort' : { '$regex' : '?0', '$options' : 'i'}}]}")
     Flux<Profile> findProfileByQuery(String query, List<String> blockers, Pageable page);
 }
