@@ -58,6 +58,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security:$springbootVersion"
     //implementation "org.springframework.boot:spring-boot-starter-oauth2-client:$springbootVersion"
     implementation 'com.stripe:stripe-java:24.22.0'
+
+    // Azure Resources
+    implementation 'com.azure:azure-messaging-servicebus:7.17.4'
+    implementation 'com.azure:azure-identity:1.14.0'
     implementation "com.azure.spring:spring-cloud-azure-starter-keyvault:5.23.0"
     implementation 'dev.samstevens.totp:totp:1.7.1'  // MFA Support
 

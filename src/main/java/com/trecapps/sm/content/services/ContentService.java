@@ -5,9 +5,12 @@ import com.trecapps.auth.common.models.TcUser;
 import com.trecapps.sm.common.functionality.ObjectResponseException;
 import com.trecapps.sm.common.functionality.ProfileFunctionality;
 import com.trecapps.sm.common.models.ResponseObj;
+import com.trecapps.sm.common.models.SocialMediaEvent;
+import com.trecapps.sm.common.models.SocialMediaEventType;
 import com.trecapps.sm.content.dto.ContentPost;
 import com.trecapps.sm.content.dto.ContentPut;
 import com.trecapps.sm.content.models.Posting;
+import com.trecapps.sm.content.pipeline.IEventInitiator;
 import com.trecapps.sm.content.repos.ContentRepo;
 import com.trecapps.sm.profile.repos.ProfileRepoMongo;
 import com.trecapps.sm.profile.models.Profile;
@@ -36,6 +39,9 @@ public class ContentService {
 
     @Autowired
     ProfileRepoMongo profileRepo;
+
+    @Autowired(required = false)
+    IEventInitiator eventInitiator;
 
     @Value("${trecapps.sm.enable-cross-profile-posting:true}")
     boolean allowCrossProfilePosting;
@@ -91,6 +97,22 @@ public class ContentService {
                 .flatMap(contentRepo::save)
                 .doOnNext((Posting newPost) -> {
                     // ToDo - add Broadcast mechanism
+                    if(eventInitiator == null) return;
+
+                    if(newPost.getParents().size() > 1) return;
+
+                    SocialMediaEvent event = new SocialMediaEvent();
+                    event.setUserId(newPost.getUserId());
+                    event.setResourceId(newPost.getId());
+                    event.setModule(newPost.getModuleId());
+                    if(newPost.isPost()){
+                        event.setType(SocialMediaEventType.POST);
+                    } else {
+                        event.setType(SocialMediaEventType.COMMENT);
+                        event.setPostId(newPost.getParent());
+                    }
+
+                    eventInitiator.sendEvent(event).subscribe();
                 })
                 .map((Posting newPost) -> {
                     ResponseObj ret = ResponseObj.getInstanceOK("Posted!", newPost.getId());
@@ -127,6 +149,19 @@ public class ContentService {
                 })
                 .doOnNext((Posting post) -> {
                     // ToDo - render stale every reaction that reacted to the previous version of this post
+
+                    if(eventInitiator == null) return;
+
+                    SocialMediaEvent event = new SocialMediaEvent();
+                    event.setUserId(post.getUserId());
+                    event.setResourceId(post.getId());
+                    event.setModule(post.getModuleId());
+                    event.setPostId(post.getParent()); // Since posts/comments are in the same database, it does
+                        // not matter if the parent is a post or comment
+
+                    event.setType(SocialMediaEventType.CONTENT_EDIT);
+
+                    eventInitiator.sendEvent(event).subscribe();
                 })
                 .map((Posting p) -> {
                     ResponseObj obj = ResponseObj.getInstanceOK("Success");
