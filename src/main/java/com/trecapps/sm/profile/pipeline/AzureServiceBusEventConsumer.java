@@ -38,11 +38,15 @@ public class AzureServiceBusEventConsumer implements IEventConsumer {
             ServiceBusReceivedMessage message = context.getMessage();
             String messageStr = message.getBody().toString();
             SocialMediaEvent event = (SocialMediaEvent)this.objectMapper.readValue(messageStr, SocialMediaEvent.class);
-            if (this.handler.processEvent(event)) {
-                context.complete();
-            } else {
-                context.deadLetter();
-            }
+
+            this.handler.processEvent(event).doOnNext((Boolean success) -> {
+                if (success) {
+                    context.complete();
+                } else {
+                    context.deadLetter();
+                }
+            }).subscribe();
+
     }
 
     void processError(ServiceBusErrorContext context) {

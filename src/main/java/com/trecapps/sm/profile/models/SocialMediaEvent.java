@@ -18,8 +18,16 @@ public class SocialMediaEvent {
     @Column("content_id")
     String contentId;
 
+    @Column("parent_content_id")
+    String parentContentId;
+
     @Column("type")
     String type;
+
+    @Column("other_profile")
+    String otherProfile;
+
+    //@Column("content_poster")
 
     public void setType(SocialMediaEventType type){
         this.type = type.name();
