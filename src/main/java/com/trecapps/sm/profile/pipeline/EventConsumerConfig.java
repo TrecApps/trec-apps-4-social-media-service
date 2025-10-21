@@ -14,7 +14,7 @@ public class EventConsumerConfig {
             name = {"strategy"},
             havingValue = "azure-service-bus-entra"
     )
-    IEventConsumer getServiceBusEntra(
+    IEventConsumer getConsumerServiceBusEntra(
             @Value("${trecapps.smconsumer.queue}") String queue,
             @Value("${trecapps.smconsumer.namespace}") String namespace,
             Jackson2ObjectMapperBuilder objectMapperBuilder) {
@@ -27,7 +27,7 @@ public class EventConsumerConfig {
             name = {"strategy"},
             havingValue = "azure-service-bus-connection-string"
     )
-    IEventConsumer getServiceBusConnString(
+    IEventConsumer getConsumerServiceBusConnString(
             @Value("${trecapps.smconsumer.queue}") String queue,
             @Value("${trecapps.smconsumer.connection}") String connection,
             Jackson2ObjectMapperBuilder objectMapperBuilder) {

@@ -22,7 +22,7 @@ public class ProfileFilterList {
 
     private static final double PROBABILITY_MODIFIER = 1.25;
 
-    public double getProbablity(String id, SocialMediaEventType type){
+    public double getProbability(String id, SocialMediaEventType type){
 
             for(ProfileFilter filter: filterList){
                 if(id.equals(filter.from) && type.equals(filter.type))

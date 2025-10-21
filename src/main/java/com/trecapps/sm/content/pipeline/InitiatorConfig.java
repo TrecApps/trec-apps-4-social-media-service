@@ -15,7 +15,7 @@ public class InitiatorConfig {
             name = {"strategy"},
             havingValue = "azure-service-bus-entra"
     )
-    IEventInitiator getServiceBusEntra(
+    IEventInitiator getProducerServiceBusEntra(
             @Value("${trecapps.sminitiator.queue}") String queue,
             @Value("${trecapps.sminitiator.namespace}") String namespace,
             Jackson2ObjectMapperBuilder objectMapperBuilder) {
@@ -28,7 +28,7 @@ public class InitiatorConfig {
             name = {"strategy"},
             havingValue = "azure-service-bus-connection-string"
     )
-    IEventInitiator getServiceBusConnString(
+    IEventInitiator getProducerServiceBusConnString(
             @Value("${trecapps.sminitiator.queue}") String queue,
             @Value("${trecapps.sminitiator.connection}") String connection,
             Jackson2ObjectMapperBuilder objectMapperBuilder) {
