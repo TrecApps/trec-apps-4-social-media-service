@@ -5,6 +5,7 @@ import com.trecapps.auth.common.models.TrecAuthentication;
 import com.trecapps.sm.common.functionality.ProfileFunctionality;
 import com.trecapps.sm.common.models.ResponseObj;
 import com.trecapps.sm.profile.models.ConnectionEntry;
+import com.trecapps.sm.profile.models.ProfileConnections;
 import com.trecapps.sm.profile.service.ConnectionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,7 @@ public class ConnectionController {
     }
 
     @GetMapping("/with/{id}")
-    Mono<ResponseEntity<ConnectionEntry>> with(
+    Mono<ResponseEntity<ProfileConnections>> with(
             Authentication authentication,
             @PathVariable String id
     ) {
@@ -45,9 +46,7 @@ public class ConnectionController {
         return connectionsService.getTwoWayConnection(
                 ProfileFunctionality.getProfileId(trecAuthentication.getUser(), trecAuthentication.getBrand()),
                 id
-        ).map((Optional<ConnectionEntry> oEntry) -> {
-            return oEntry.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        });
+        ).map(ResponseEntity::ok);
     }
 
     @GetMapping("/approve")

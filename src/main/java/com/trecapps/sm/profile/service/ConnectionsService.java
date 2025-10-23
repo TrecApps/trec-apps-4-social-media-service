@@ -8,6 +8,7 @@ import com.trecapps.sm.common.models.ResponseObj;
 import com.trecapps.sm.profile.models.ConnectionEntry;
 import com.trecapps.sm.profile.models.ConnectionLink;
 import com.trecapps.sm.profile.models.Profile;
+import com.trecapps.sm.profile.models.ProfileConnections;
 import com.trecapps.sm.profile.repos.ConnectionRepo;
 import com.trecapps.sm.profile.repos.ProfileRepoMongo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +40,9 @@ public class ConnectionsService {
         return link;
     }
 
-    public Mono<Optional<ConnectionEntry>> getTwoWayConnection(String profile1, String profile2) {
-        ConnectionLink link1 = getLink(profile1, profile2);
-        ConnectionLink link2 = getLink(profile2, profile1);
+    public Mono<ProfileConnections> getTwoWayConnection(String profile1, String profile2) {
+        ConnectionLink link1 = getLink(profile1, profile2); // As Followee, since requester would be the follower
+        ConnectionLink link2 = getLink(profile2, profile1); // As Follower, since requester would be the followee
 
         Mono<Optional<ConnectionEntry>> mono1 = connectionRepo.findById(link1)
                 .map(Optional::of)
@@ -52,10 +53,13 @@ public class ConnectionsService {
 
         return mono1.zipWith(mono2)
                 .map((Tuple2<Optional<ConnectionEntry>, Optional<ConnectionEntry>> tup) -> {
-                    Optional<ConnectionEntry> ent1 = tup.getT1();
+                    ProfileConnections ret = new ProfileConnections();
+                    Optional<ConnectionEntry> ent1 = tup.getT1(); // As Followee
+                    ent1.ifPresent(ret::setAsFollowee);
                     Optional<ConnectionEntry> ent2 = tup.getT2();
+                    ent2.ifPresent(ret::setAsFollower);
 
-                    return ent1.isPresent() ? ent1 : ent2;
+                    return ret;
                 } );
     }
 
@@ -82,7 +86,13 @@ public class ConnectionsService {
                         // ToDo - check Block
 
                         if(profileId.startsWith("User-")){
-                            existingEntry = this.getTwoWayConnection(profileId, profile)  ;
+                            existingEntry = this.getTwoWayConnection(profileId, profile)
+                                    .map((ProfileConnections connections) -> {
+                                        ConnectionEntry entry = connections.getAsFollower();
+                                        if(entry == null)
+                                            entry = connections.getAsFollowee();
+                                        return Optional.ofNullable(entry);
+                                    });
                         }
                     }
                     if(existingEntry == null){
@@ -141,7 +151,9 @@ public class ConnectionsService {
         return this.getTwoWayConnection(
                 ProfileFunctionality.getProfileId(user,brands),
                 profile
-        ).flatMap((Optional<ConnectionEntry> oEntry) -> {
+        )
+        .map((ProfileConnections con) -> Optional.ofNullable(con.getAsFollowee()))
+        .flatMap((Optional<ConnectionEntry> oEntry) -> {
             if(oEntry.isEmpty())
                 throw new ObjectResponseException(HttpStatus.NOT_FOUND, "Connection not found!");
 
