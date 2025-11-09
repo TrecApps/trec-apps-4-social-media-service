@@ -5,13 +5,18 @@ import com.trecapps.auth.common.models.TcUser;
 import com.trecapps.sm.common.functionality.ObjectResponseException;
 import com.trecapps.sm.common.functionality.ProfileFunctionality;
 import com.trecapps.sm.common.models.ResponseObj;
+import com.trecapps.sm.common.notify.ISMProducer;
+import com.trecapps.sm.common.notify.ImageEndpointType;
+import com.trecapps.sm.common.notify.NotificationPost;
 import com.trecapps.sm.profile.models.ConnectionEntry;
 import com.trecapps.sm.profile.models.ConnectionLink;
 import com.trecapps.sm.profile.models.Profile;
 import com.trecapps.sm.profile.models.ProfileConnections;
 import com.trecapps.sm.profile.repos.ConnectionRepo;
 import com.trecapps.sm.profile.repos.ProfileRepoMongo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ConnectionsService {
 
     @Autowired
@@ -33,12 +39,20 @@ public class ConnectionsService {
     @Autowired
     ProfileRepoMongo profileRepo;
 
+    @Autowired(required = false)
+    ISMProducer notificationProducer;
+
+    @Value("${trecapps.sm.name}")
+    String app;
+
     ConnectionLink getLink(String follower, String followee){
         ConnectionLink link = new ConnectionLink();
         link.setFollower(follower);
         link.setFollowee(followee);
         return link;
     }
+
+    record ConnectionProfile(Optional<ConnectionEntry> entry, Profile profile){}
 
     public Mono<ProfileConnections> getTwoWayConnection(String profile1, String profile2) {
         ConnectionLink link1 = getLink(profile1, profile2); // As Followee, since requester would be the follower
@@ -76,9 +90,10 @@ public class ConnectionsService {
                     if(profile1.getId() == null)
                         throw new ObjectResponseException(HttpStatus.NOT_FOUND, "Profile not found");
                 })
-                .thenReturn(ProfileFunctionality.getProfileId(user, brand))
 
-                .flatMap((String profileId) -> {
+                .flatMap((Profile profile1) -> {
+
+                    String profileId = ProfileFunctionality.getProfileId(user, brand);
 
                     Mono<Optional<ConnectionEntry>> existingEntry = null;
 
@@ -101,9 +116,14 @@ public class ConnectionsService {
                                 .map(Optional::of)
                                 .defaultIfEmpty(Optional.empty());
                     }
-                    return existingEntry;
+                    return existingEntry.map((Optional<ConnectionEntry> e) -> {
+                       return new  ConnectionProfile(e, profile1);
+                    });
                 })
-                .flatMap((Optional<ConnectionEntry> oEntry) -> {
+                .flatMap((ConnectionProfile connectionProfile) -> {
+
+                    Optional<ConnectionEntry> oEntry = connectionProfile.entry();
+
                     if(oEntry.isPresent())
                         throw new ObjectResponseException(HttpStatus.ALREADY_REPORTED, "Connection Already Exists!");
                     ConnectionEntry entry = new ConnectionEntry();
@@ -115,7 +135,40 @@ public class ConnectionsService {
 
                     return connectionRepo.save(entry)
                             .doOnNext((ConnectionEntry e) -> {
-                                // ToDo - notification support
+                                if(notificationProducer == null) return;
+
+                                Profile followee = connectionProfile.profile();
+
+                                NotificationPost notifyPost = new NotificationPost();
+                                notifyPost.setAppId(app);
+                                notifyPost.setCategory("Connect");
+                                String followeeId = followee.getId();
+                                if(followeeId.startsWith("Brand-")){
+                                    notifyPost.setBrandId(followeeId.substring(6));
+                                    notifyPost.setType(ImageEndpointType.BRAND_PROFILE);
+                                } else {
+                                    notifyPost.setUserId(followeeId.substring(5));
+                                    notifyPost.setType(ImageEndpointType.USER_PROFILE);
+
+                                }
+
+                                notifyPost.setImageId(ProfileFunctionality.getProfileId(user, brand));
+                                notifyPost.setRelevantId(ProfileFunctionality.getProfileId(user, brand));
+
+                                if(e.isOneWay()){
+                                    notifyPost.setMessage(String.format(
+                                            "%s is now following you", brand == null ? user.getDisplayName() : brand.getName()
+                                    ));
+                                } else {
+                                    notifyPost.setMessage(String.format(
+                                            "%s wants to connect with you", brand == null ? user.getDisplayName() : brand.getName()
+                                    ));
+                                }
+
+                                notificationProducer.sendNotification(notifyPost).doOnNext((Boolean worked) -> {
+                                    log.error("Failed to notify {} of follow by {}", e.getId().getFollowee(), e.getId().getFollower());
+                                }).subscribe();
+
                             })
                             .thenReturn(ResponseObj.getInstanceOK("Made"));
                 })
@@ -140,7 +193,39 @@ public class ConnectionsService {
                     entry.setAccepted(OffsetDateTime.now());
                     return connectionRepo.save(entry)
                             .doOnNext((ConnectionEntry e) -> {
-                                // ToDo - notify requester of request
+
+                                if(notificationProducer == null) return;
+
+                                profileRepo.findById(e.getId().getFollower())
+                                        .flatMap((Profile follower) -> {
+                                            NotificationPost notifyPost = new NotificationPost();
+                                            notifyPost.setAppId(app);
+                                            notifyPost.setCategory("Connect");
+
+                                            notifyPost.setUserId(profile.substring(5));
+                                            notifyPost.setType(ImageEndpointType.USER_PROFILE);
+
+                                            notifyPost.setImageId(follower.getId());
+                                            notifyPost.setRelevantId(follower.getId());
+
+                                            notifyPost.setMessage(String.format(
+                                                    "%s has accepted your connection request!", user.getDisplayName()
+                                            ));
+
+                                            return notificationProducer.sendNotification(notifyPost);
+                                        }).map((Boolean worked) -> {
+
+                                            return worked ? 0 : 1;
+                                        })
+                                        .defaultIfEmpty(2).doOnNext((Integer result) -> {
+                                            switch(result){
+                                                case 1:
+                                                    log.error("Failed to notify {} of connection approval by {}", e.getId().getFollower(), e.getId().getFollowee());
+                                                    break;
+                                                case 2:
+                                                    log.error("Failed to recover profile for {} in connection request approval", profile);
+                                            }
+                                        }).subscribe();
                             })
                             .thenReturn(ResponseObj.getInstanceOK("Made"));
                 })
