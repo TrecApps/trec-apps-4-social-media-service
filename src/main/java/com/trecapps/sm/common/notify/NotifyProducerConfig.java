@@ -13,26 +13,26 @@ public class NotifyProducerConfig {
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "trecapps.message.producer",
+            prefix = "trecapps.notify.producer",
             name = {"strategy"},
             havingValue = "azure-service-bus-entra"
     )
-    ISMProducer getProducerServiceBusEntra(
-            @Value("${trecapps.message.producer.queue}") String queue,
-            @Value("${trecapps.message.producer.namespace}") String namespace,
+    ISMProducer getNotifyProducerServiceBusEntra(
+            @Value("${trecapps.notify.producer.queue}") String queue,
+            @Value("${trecapps.notify.producer.namespace}") String namespace,
             Jackson2ObjectMapperBuilder objectMapperBuilder) {
         return new ServiceBusSMProducer(queue, namespace, objectMapperBuilder, false);
     }
 
     @Bean
     @ConditionalOnProperty(
-            prefix = "trecapps.message.producer",
+            prefix = "trecapps.notify.producer",
             name = {"strategy"},
             havingValue = "azure-service-bus-connection-string"
     )
-    ISMProducer getProducerServiceBusConnString(
-            @Value("${trecapps.message.producer.queue}") String queue,
-            @Value("${trecapps.message.producer.connection}") String connection,
+    ISMProducer getNotifyProducerServiceBusConnString(
+            @Value("${trecapps.notify.producer.queue}") String queue,
+            @Value("${trecapps.notify.producer.connection}") String connection,
             Jackson2ObjectMapperBuilder objectMapperBuilder) {
         return new ServiceBusSMProducer(queue, connection, objectMapperBuilder, true);
     }
