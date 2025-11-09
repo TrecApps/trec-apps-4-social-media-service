@@ -8,8 +8,8 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 @PrimaryKeyClass
 @Data
 public class ConnectionLink {
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0)
     String follower;
-    @PrimaryKeyColumn
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1)
     String followee;
 }
