@@ -17,11 +17,13 @@ public class MediaEventId {
     @Column("profile_id")
     String profile;
 
+
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1)
+    String category;        // The category to find the entry in
+
+    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 2)
     @Column("random_id")
     String randomId;
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 2)
-    String category;        // The category to find the entry in
 
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 3)
     @CassandraType(type = CassandraType.Name.TIMESTAMP)

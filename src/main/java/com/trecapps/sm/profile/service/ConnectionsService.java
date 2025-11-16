@@ -166,7 +166,8 @@ public class ConnectionsService {
                                 }
 
                                 notificationProducer.sendNotification(notifyPost).doOnNext((Boolean worked) -> {
-                                    log.error("Failed to notify {} of follow by {}", e.getId().getFollowee(), e.getId().getFollower());
+                                    if(!worked)
+                                        log.error("Failed to notify {} of follow by {}", e.getId().getFollowee(), e.getId().getFollower());
                                 }).subscribe();
 
                             })
@@ -196,8 +197,8 @@ public class ConnectionsService {
 
                                 if(notificationProducer == null) return;
 
-                                profileRepo.findById(e.getId().getFollower())
-                                        .flatMap((Profile follower) -> {
+                                profileRepo.findById(e.getId().getFollowee())
+                                        .flatMap((Profile followee) -> {
                                             NotificationPost notifyPost = new NotificationPost();
                                             notifyPost.setAppId(app);
                                             notifyPost.setCategory("Connect");
@@ -205,8 +206,8 @@ public class ConnectionsService {
                                             notifyPost.setUserId(profile.substring(5));
                                             notifyPost.setType(ImageEndpointType.USER_PROFILE);
 
-                                            notifyPost.setImageId(follower.getId());
-                                            notifyPost.setRelevantId(follower.getId());
+                                            notifyPost.setImageId(followee.getId());
+                                            notifyPost.setRelevantId(followee.getId());
 
                                             notifyPost.setMessage(String.format(
                                                     "%s has accepted your connection request!", user.getDisplayName()
