@@ -1,5 +1,6 @@
 package com.trecapps.sm.profile.pipeline;
 
+import com.trecapps.sm.common.functionality.ProfileFunctionality;
 import com.trecapps.sm.common.models.SocialMediaEvent;
 import com.trecapps.sm.common.models.SocialMediaEventType;
 import com.trecapps.sm.profile.models.ConnectionEntry;
@@ -56,6 +57,11 @@ public class SocialMediaEventHandler implements IEventHandler {
 
     @Override
     public Mono<Boolean> processEvent(SocialMediaEvent var1) {
+
+        if(var1.getProfile() == null){
+            // This should not be needed moving forward
+            var1.setProfile(ProfileFunctionality.getProfileId(var1.getUserId(), null));
+        }
 
         Mono<Boolean> byFollowers = processFollowingEvent(var1, 0);
         Mono<Boolean> byOtherConnections = processFollowerEvent(var1, 0);

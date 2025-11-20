@@ -105,6 +105,7 @@ public class ContentService {
                     event.setUserId(newPost.getUserId());
                     event.setResourceId(newPost.getId());
                     event.setModule(newPost.getModuleId());
+                    event.setProfile(newPost.getProfilePoster());
                     if(newPost.isPost()){
                         event.setType(SocialMediaEventType.POST);
                     } else {
@@ -160,6 +161,7 @@ public class ContentService {
                         // not matter if the parent is a post or comment
 
                     event.setType(SocialMediaEventType.CONTENT_EDIT);
+                    event.setProfile(post.getProfilePoster());
 
                     eventInitiator.sendEvent(event).subscribe();
                 })

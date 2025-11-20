@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.6'
+    id 'org.springframework.boot' version '3.5.7'
     id 'jacoco'
 }
 
@@ -12,7 +12,7 @@ group = 'com.trecapps'
 version = '1.0-SNAPSHOT'
 
 ext {
-    springbootVersion = '3.5.6'
+    springbootVersion = '3.5.7'
 }
 
 targetCompatibility = 21
@@ -41,7 +41,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
     //Enable Trec-Auth
-    implementation 'com.trecapps.auth:TrecAuth:0.9.35-alpha'
+    implementation 'com.trecapps.auth:TrecAuth:0.9.38-alpha'
 
     implementation "com.microsoft.azure:applicationinsights-runtime-attach:3.4.19"
 

@@ -113,6 +113,8 @@ public class ReactionService {
                         event.setPostId(parent);
                     }
 
+                    event.setProfile(ProfileFunctionality.getProfileId(entity.getReactionId().getUserId(), entity.getBrandId()));
+
                     eventInitiator.sendEvent(event).subscribe();
 
                 })
