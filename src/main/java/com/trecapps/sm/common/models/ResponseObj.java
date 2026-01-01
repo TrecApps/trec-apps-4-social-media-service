@@ -1,7 +1,5 @@
 package com.trecapps.sm.common.models;
 
-import com.nimbusds.oauth2.sdk.Response;
-import jdk.jshell.Snippet;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

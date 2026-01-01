@@ -7,14 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.trecapps.sm.common.models.SocialMediaEvent;
 import lombok.SneakyThrows;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 public class AzureServiceBusEventConsumer implements IEventConsumer {
     ServiceBusProcessorClient processorClient;
     IEventHandler handler;
     ObjectMapper objectMapper;
 
-    AzureServiceBusEventConsumer(String queue, String connector, Jackson2ObjectMapperBuilder objectMapperBuilder1, boolean useConnectionString) {
+    AzureServiceBusEventConsumer(String queue, String connector, ObjectMapper objectMapper, boolean useConnectionString) {
         if (useConnectionString) {
             this.processorClient = (new ServiceBusClientBuilder())
                     .connectionString(connector)
@@ -28,7 +27,7 @@ public class AzureServiceBusEventConsumer implements IEventConsumer {
             this.processorClient = (new ServiceBusClientBuilder()).fullyQualifiedNamespace(String.format("%s.servicebus.windows.net", connector)).credential(credential).processor().queueName(queue).processMessage(this::processMessage).processError(this::processError).buildProcessorClient();
         }
 
-        this.objectMapper = objectMapperBuilder1.createXmlMapper(false).build();
+        this.objectMapper = objectMapper;
         this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 

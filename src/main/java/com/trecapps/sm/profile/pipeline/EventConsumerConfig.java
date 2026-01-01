@@ -1,5 +1,6 @@
 package com.trecapps.sm.profile.pipeline;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -17,8 +18,8 @@ public class EventConsumerConfig {
     IEventConsumer getConsumerServiceBusEntra(
             @Value("${trecapps.smconsumer.queue}") String queue,
             @Value("${trecapps.smconsumer.namespace}") String namespace,
-            Jackson2ObjectMapperBuilder objectMapperBuilder) {
-        return new AzureServiceBusEventConsumer(queue, namespace, objectMapperBuilder, false);
+            ObjectMapper objectMapper) {
+        return new AzureServiceBusEventConsumer(queue, namespace, objectMapper, false);
     }
 
     @Bean
@@ -30,7 +31,7 @@ public class EventConsumerConfig {
     IEventConsumer getConsumerServiceBusConnString(
             @Value("${trecapps.smconsumer.queue}") String queue,
             @Value("${trecapps.smconsumer.connection}") String connection,
-            Jackson2ObjectMapperBuilder objectMapperBuilder) {
-        return new AzureServiceBusEventConsumer(queue, connection, objectMapperBuilder, true);
+            ObjectMapper objectMapper) {
+        return new AzureServiceBusEventConsumer(queue, connection, objectMapper, true);
     }
 }
